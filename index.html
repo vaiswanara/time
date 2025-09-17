@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Time-of-Birth Calculator (Ghati / Phala)</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Time-of-Birth Calculator</h1>
+  <p class="lead">Switch between conversions: <strong>Ghati/Phala → HH:MM</strong> or <strong>HH:MM → Ghati/Phala</strong>.</p>
+
+  <div class="tabs">
+    <button id="tab1" class="active">Ghati-Phala ➜ HH:MM</button>
+    <button id="tab2">HH:MM ➜ Ghati-Phala</button>
+  </div>
+
+  <!-- Section 1: Ghati-Phala to Time -->
+  <div id="section1" class="section active">
+    <div class="grid">
+      <div>
+        <label for="date">Date (DD-MM-YYYY)</label>
+        <input id="date" type="date" />
+      </div>
+      <div>
+        <label for="sunrise">Sunrise time (on that date)</label>
+        <input id="sunrise" type="time" step="1" />
+      </div>
+      <div>
+        <label for="ghatis">Ghatis</label>
+        <input id="ghatis" type="number" min="0" step="1" value="0" />
+      </div>
+      <div>
+        <label for="phalas">Phalas</label>
+        <input id="phalas" type="number" min="0" step="1" value="0" />
+      </div>
+      <div class="full">
+        <label for="timezone">Timezone (for display) — optional</label>
+        <select id="timezone">
+          <option value="Asia/Kolkata" selected>Asia/Kolkata (IST)</option>
+        </select>
+      </div>
+      <div class="full" style="display:flex;gap:12px;align-items:center">
+        <button id="calc1" class="calc">Calculate Time of Birth</button>
+        <button id="copy1" type="button">Copy result</button>
+      </div>
+    </div>
+    <div id="output1" class="result">
+      <div id="summary1" class="small muted">Result will appear here.</div>
+      <pre id="iso1" style="margin-top:8px;white-space:pre-wrap"></pre>
+    </div>
+  </div>
+
+  <!-- Section 2: Time to Ghati-Phala -->
+  <div id="section2" class="section">
+    <div class="grid">
+      <div>
+        <label for="date2">Date (DD-MM-YYYY)</label>
+        <input id="date2" type="date" />
+      </div>
+      <div>
+        <label for="sunrise2">Sunrise time (on that date)</label>
+        <input id="sunrise2" type="time" step="1" />
+      </div>
+      <div>
+        <label for="timehhmm">Given Time (HH:MM)</label>
+        <input id="timehhmm" type="time" step="1" />
+      </div>
+      <div class="full" style="display:flex;gap:12px;align-items:center">
+        <button id="calc2" class="calc">Convert to Ghati-Phala</button>
+        <button id="copy2" type="button">Copy result</button>
+      </div>
+    </div>
+    <div id="output2" class="result">
+      <div id="summary2" class="small muted">Result will appear here.</div>
+      <pre id="iso2" style="margin-top:8px;white-space:pre-wrap"></pre>
+    </div>
+  </div>
+
+  <div class="note">
+    <strong>Assumptions:</strong>
+    <ul>
+      <li>1 ghati = 24 minutes</li>
+      <li>1 phala = 24 seconds (60 phalas = 1 ghati)</li>
+      <li>1 hour = 2.5 ghatis</li>
+      <li>1 minute = 2.5 phalas</li>
+      <li>The given sunrise is taken as reference point.</li>
+    </ul>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
