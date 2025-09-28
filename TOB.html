@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Time-of-Birth Calculator (Ghati / Phala)</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Noto Sans',Ubuntu,'Helvetica Neue',Arial;}
+    body{max-width:780px;margin:28px auto;padding:20px;background:#fbfbff;border-radius:12px;box-shadow:0 6px 24px rgba(20,20,50,0.08)}
+    h1{font-size:20px;margin-bottom:8px}
+    p.lead{color:#334;opacity:0.9}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+    label{font-size:13px;color:#123;padding-bottom:6px;display:block}
+    input,select{width:100%;padding:10px;border-radius:8px;border:1px solid #d6d6e0;font-size:14px}
+    .full{grid-column:1/-1}
+    button{padding:10px 14px;border-radius:10px;border:0;background:#2b6cb0;color:white;font-weight:600;cursor:pointer}
+    .result{margin-top:18px;padding:14px;border-radius:10px;background:#fff;border:1px solid #e6eefb}
+    .muted{color:#556;opacity:0.85;font-size:13px}
+    .small{font-size:13px;color:#444}
+    .footer{margin-top:18px;color:#334;font-size:13px}
+    .note{background:#fffbe6;border-left:4px solid #ffd24d;padding:12px;border-radius:8px;margin-top:12px}
+  </style>
+</head>
+<body>
+  <h1>Time-of-Birth Calculator — Ghati & Phala</h1>
+  <p class="lead">Enter the date, sunrise time and the traditional time given in <strong>ghatis</strong> and <strong>phalas</strong>. This will add the duration to sunrise and show the birth time.</p>
+
+  <div class="grid">
+    <div>
+      <label for="date">Date (DD-MM-YYYY)</label>
+      <input id="date" type="date" />
+    </div>
+
+    <div>
+      <label for="sunrise">Sunrise time (on that date)</label>
+      <input id="sunrise" type="time" step="1" />
+    </div>
+
+    <div>
+      <label for="ghatis">Ghatis</label>
+      <input id="ghatis" type="number" min="0" step="1" value="0" />
+    </div>
+
+    <div>
+      <label for="phalas">Phalas</label>
+      <input id="phalas" type="number" min="0" step="1" value="0" />
+    </div>
+
+    <div class="full">
+      <label for="timezone">Timezone (for display) — optional</label>
+      <select id="timezone">
+        <option value="local">Use browser local timezone</option>
+        <option value="Asia/Kolkata">Asia/Kolkata (IST)</option>
+        <option value="UTC">UTC</option>
+      </select>
+    </div>
+
+    <div class="full" style="display:flex;gap:8px;align-items:center">
+      <button id="calc">Calculate Time of Birth</button>
+      <button id="copy" type="button">Copy result</button>
+      <button id="download" type="button">Download HTML</button>
+    </div>
+  </div>
+
+  <div id="output" class="result">
+    <div id="summary" class="small muted">Result will appear here.</div>
+    <pre id="iso" style="margin-top:8px;white-space:pre-wrap"></pre>
+  </div>
+
+  <div class="note">
+    <strong>Assumptions:</strong>
+    <ul>
+      <li>1 ghati = 24 minutes</li>
+      <li>1 phala = 24 seconds (so 60 phalas = 1 ghati)</li>
+      <li>The given sunrise time is the sunrise on the provided date (the script adds the ghati+phala duration to that moment).</li>
+    </ul>
+  </div>
+
+  <div class="footer">Made with care — enter values and press <strong>Calculate</strong>. If you prefer another convention for ghati/phala, adjust the constants in the script (top).
+  </div>
+
+<script>
+/*
+  Time-of-Birth Calculator
+  - Adds (ghatis * GHATI_MINUTES) + (phalas * PHALA_SECONDS) to the sunrise moment on the given date
+  - By default uses browser local timezone, but you can choose Asia/Kolkata (IST) or UTC for display
+  - Edge cases: if sunrise is missing or date not selected, the script will show an error
+*/
+
+const GHATI_MINUTES = 24;        // minutes in 1 ghati
+const PHALA_SECONDS = 24;        // seconds in 1 phala
+
+function parseDateInput(dateStr, timeStr) {
+  // dateStr: 'YYYY-MM-DD' from <input type=date>
+  // timeStr: 'HH:MM' or 'HH:MM:SS' from <input type=time>
+  if (!dateStr) return null;
+  // combine into an ISO-like string that's interpreted in local timezone
+  const timePart = timeStr || '00:00:00';
+  const parts = timePart.split(':');
+  const h = parts[0] ?? '00';
+  const m = parts[1] ?? '00';
+  const s = parts[2] ?? '00';
+  // Create a Date object in local timezone corresponding to date + time
+  const [y, mo, d] = dateStr.split('-').map(Number);
+  return new Date(y, mo - 1, d, Number(h), Number(m), Number(s));
+}
+
+function formatDateForZone(dateObj, zoneOption) {
+  if (!dateObj) return '';
+  if (zoneOption === 'local') {
+    return dateObj.toLocaleString();
+  }
+  // Try Intl.DateTimeFormat with timeZone if supported
+  try {
+    const formatter = new Intl.DateTimeFormat('en-GB', {
+      year: 'numeric', month: 'short', day: '2-digit',
+      hour: '2-digit', minute: '2-digit', second: '2-digit',
+      hour12: false, timeZone: zoneOption
+    });
+    return formatter.format(dateObj) + ` (${zoneOption})`;
+  } catch (e) {
+    return dateObj.toLocaleString() + ` (requested ${zoneOption})`;
+  }
+}
+
+function calculateBirth(dateStr, sunriseStr, ghatis, phalas) {
+  const sunrise = parseDateInput(dateStr, sunriseStr);
+  if (!sunrise || Number.isNaN(sunrise.getTime())) return { error: 'Invalid date or sunrise time.' };
+
+  const totalMinutes = Number(ghatis) * GHATI_MINUTES;
+  const totalSeconds = Number(phalas) * PHALA_SECONDS;
+
+  const result = new Date(sunrise.getTime());
+  result.setMinutes(result.getMinutes() + Math.trunc(totalMinutes));
+  result.setSeconds(result.getSeconds() + Math.trunc(totalSeconds));
+
+  // normalize in case seconds overflowed minutes
+  return { sunrise, result, totalMinutes, totalSeconds };
+}
+
+// UI wiring
+const dateEl = document.getElementById('date');
+const sunriseEl = document.getElementById('sunrise');
+const ghatisEl = document.getElementById('ghatis');
+const phalasEl = document.getElementById('phalas');
+const tzEl = document.getElementById('timezone');
+const outSummary = document.getElementById('summary');
+const outIso = document.getElementById('iso');
+const calcBtn = document.getElementById('calc');
+const copyBtn = document.getElementById('copy');
+const downloadBtn = document.getElementById('download');
+
+calcBtn.addEventListener('click', () => {
+  const dateStr = dateEl.value;
+  const sunriseStr = sunriseEl.value;
+  const ghatis = Number(ghatisEl.value || 0);
+  const phalas = Number(phalasEl.value || 0);
+
+  const res = calculateBirth(dateStr, sunriseStr, ghatis, phalas);
+  if (res.error) {
+    outSummary.textContent = res.error;
+    outIso.textContent = '';
+    return;
+  }
+
+  const tz = tzEl.value;
+  const sunriseFmt = formatDateForZone(res.sunrise, tz === 'local' ? 'local' : tz);
+  const birthFmt = formatDateForZone(res.result, tz === 'local' ? 'local' : tz);
+
+  // Display human readable summary
+  outSummary.innerHTML = `<strong>Birth time:</strong> ${birthFmt}` +
+    `\n<strong>Sunrise used:</strong> ${sunriseFmt}` +
+    `\n<strong>Added duration:</strong> ${ghatis} ghatis (${ghatis * GHATI_MINUTES} min) + ${phalas} phalas (${phalas * PHALA_SECONDS} sec)`;
+
+  // Display ISO and exact milliseconds for precision
+  outIso.textContent = `Birth (ISO local): ${res.result.toString()}\nBirth (UTC ISO): ${res.result.toISOString()}`;
+});
+
+copyBtn.addEventListener('click', async () => {
+  try {
+    const text = outSummary.textContent + '\n' + outIso.textContent;
+    await navigator.clipboard.writeText(text);
+    alert('Result copied to clipboard');
+  } catch (e) {
+    alert('Copy failed — your browser may block clipboard access.');
+  }
+});
+
+// Offer to download the current HTML (helpful to save the tool locally)
+downloadBtn.addEventListener('click', () => {
+  const html = new XMLSerializer().serializeToString(document.doctype) + '\n' + document.documentElement.outerHTML;
+  const blob = new Blob([html], { type: 'text/html' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'TimeOfBirth_Calculator.html';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+});
+
+// small convenience: example prefill for quick testing (comment out if you like)
+// dateEl.value = '1968-01-16';
+// sunriseEl.value = '06:49:00';
+// ghatisEl.value = 45;
+// phalasEl.value = 15;
+
+</script>
+</body>
+</html>
