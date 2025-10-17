@@ -1,0 +1,73 @@
+Ghati-Phala to Hour-Minutes Conversion Notes
+============================================
+
+Definitions:
+------------
+- 1 Ghati = 24 minutes
+- 1 Phala = 24 seconds (60 Phalas = 1 Ghati)
+- 1 hour = 2.5 Ghatis
+- 1 minute = 2.5 Phalas
+
+Step-by-Step Conversion:
+------------------------
+
+1. **Write down the Ghatis and Phalas.**
+
+2. **Convert Ghatis to minutes:**
+   - Multiply the number of Ghatis by 24.
+   - Example: 3 Ghatis × 24 = 72 minutes
+
+3. **Convert Phalas to seconds:**
+   - Multiply the number of Phalas by 24.
+   - Example: 15 Phalas × 24 = 360 seconds
+
+4. **Convert seconds to minutes:**
+   - Divide the total seconds by 60 to get minutes.
+   - Example: 360 seconds ÷ 60 = 6 minutes
+
+5. **Add the minutes from Ghatis and Phalas:**
+   - Example: 72 minutes (from Ghatis) + 6 minutes (from Phalas) = 78 minutes
+
+6. **Convert total minutes to hours and minutes:**
+   - Divide total minutes by 60 to get hours.
+   - The remainder is the minutes.
+   - Example: 78 minutes ÷ 60 = 1 hour and 18 minutes
+
+7. **If you need the time from sunrise:**
+   - Add the calculated hours and minutes to the sunrise time.
+
+Examples:
+---------
+
+**Example 1:**
+Convert 2 Ghatis 30 Phalas to hours and minutes.
+
+- Ghatis: 2 × 24 = 48 minutes
+- Phalas: 30 × 24 = 720 seconds
+- 720 seconds ÷ 60 = 12 minutes
+- Total: 48 + 12 = 60 minutes
+- 60 minutes = 1 hour 0 minutes
+
+**Example 2:**
+Convert 5 Ghatis 45 Phalas to hours and minutes.
+
+- Ghatis: 5 × 24 = 120 minutes
+- Phalas: 45 × 24 = 1080 seconds
+- 1080 seconds ÷ 60 = 18 minutes
+- Total: 120 + 18 = 138 minutes
+- 138 minutes ÷ 60 = 2 hours 18 minutes
+
+**Example 3:**
+Convert 1 Ghati 10 Phalas to hours and minutes.
+
+- Ghatis: 1 × 24 = 24 minutes
+- Phalas: 10 × 24 = 240 seconds
+- 240 seconds ÷ 60 = 4 minutes
+- Total: 24 + 4 = 28 minutes
+- 28 minutes = 0 hours 28 minutes
+
+Tips:
+-----
+- Always convert Phalas to seconds first, then to minutes.
+- Add the minutes from Ghatis and Phalas before converting to hours and minutes.
+- For time-of-birth or other calculations, add the result to the sunrise time of that day.
